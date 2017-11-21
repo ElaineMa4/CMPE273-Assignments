@@ -1,0 +1,32 @@
+read the link, the workflow are similiar to it.
+
+at least 2 grpc servers:
+
+one is client , one is server.
+
+thrift is not advanced than grpc.
+
+requests all from rocksdb node, client talk to grpc server, make request of update.
+
+only have two choices, pull or push.
+
+it is a hybrid model.
+
+GetLatestSequenceNumber().
+
+python read and write.
+
+rocksdb is the file system, two grpc server listen read or pull.
+
+one slave is fine.
+
+no fault tolerance.
+
+for loop at least on server side. for loop running grpc
+
+50% on grpc, how to handle connection. only sync is fine. async is not necessary.
+
+need to use decorator on the assignment.
+
+https://jeffknupp.com/blog/2013/04/07/improve-your-python-yield-and-generators-explained/
+“generator function"
