@@ -22,46 +22,50 @@ class MyDatastoreServicer(datastore_pb2.DatastoreServicer):
 
     def decorator(my_func):
         def wrapper(self, request, context):
-            operation=request.operation
-            key=request.key.encode()
-            value=request.value.encode()
+            print("in wrapper")
+            operation = request.operation
+            key = request.key.encode()
+            value = request.value.encode()
             # init operation
-            operation = Datastore_pb2.UpdateInfo(operation, key, value) 
+            operation = datastore_pb2.UpdateInfo(operation=operation, key=key, value=value) 
             self.my_queue.put(operation)
             return my_func(self, request, context)
         return wrapper
     
     @decorator
-    def operation(self, request, context):
+    def update(self, request, context):
+        print("master in update")
         if request.operation == 'put':
             key = request.key.encode()
             value = request.value.encode()
             self.db.put(key, value)
-            return Datastore_pb2.Response(data='put success : {}'.format(request.key))
+            return datastore_pb2.Response(data='put success : {}'.format(request.key))
         elif request.operation == 'delete':
             d_key = request.key.encode()
             self.db.delete(d_key)
-            return Datastore_pb2.Response(data='delete success : {}'.format(request.key))
+            return datastore_pb2.Response(data='delete success : {}'.format(request.key))
         elif request.operation == 'get':
             g_key = request.key.encode()
             value = self.db.get(g_key)
-            return Datastore_pb2.Response(data='get success : {} : {}'.format(request.key, value))
+            return datastore_pb2.Response(data='get success : {} : {}'.format(request.key, value))
         else:
             print("wrong operation!")
-            return Datastore_pb2.Response(data='wrong operation!')
+            return datastore_pb2.Response(data='wrong operation!')
 
     def init_connection(self, request, context):
-            print('slave connected to master...')
-            while True:            
+        print('slave connected to master...')
+        while True: 
+            if self.my_queue.qsize() != 0:
                 real_queue = self.my_queue.get()
                 yield real_queue
+                
 
 
 def run(host, port):
     '''
     Run the GRPC server
     '''
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
     datastore_pb2_grpc.add_DatastoreServicer_to_server(MyDatastoreServicer(), server)
     server.add_insecure_port('%s:%d' % (host, port))
     server.start()

@@ -14,19 +14,14 @@ class DatastoreStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.put = channel.unary_unary(
-        '/Datastore/put',
+    self.update = channel.unary_unary(
+        '/Datastore/update',
         request_serializer=datastore__pb2.Request.SerializeToString,
         response_deserializer=datastore__pb2.Response.FromString,
         )
-    self.get = channel.unary_unary(
-        '/Datastore/get',
-        request_serializer=datastore__pb2.Request.SerializeToString,
-        response_deserializer=datastore__pb2.Response.FromString,
-        )
-    self.sendUpdateInfo = channel.unary_unary(
-        '/Datastore/sendUpdateInfo',
-        request_serializer=datastore__pb2.Request.SerializeToString,
+    self.init_connection = channel.unary_stream(
+        '/Datastore/init_connection',
+        request_serializer=datastore__pb2.UpdateReq.SerializeToString,
         response_deserializer=datastore__pb2.UpdateInfo.FromString,
         )
 
@@ -35,21 +30,14 @@ class DatastoreServicer(object):
   # missing associated documentation comment in .proto file
   pass
 
-  def put(self, request, context):
+  def update(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def get(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def sendUpdateInfo(self, request, context):
+  def init_connection(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -59,19 +47,14 @@ class DatastoreServicer(object):
 
 def add_DatastoreServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'put': grpc.unary_unary_rpc_method_handler(
-          servicer.put,
+      'update': grpc.unary_unary_rpc_method_handler(
+          servicer.update,
           request_deserializer=datastore__pb2.Request.FromString,
           response_serializer=datastore__pb2.Response.SerializeToString,
       ),
-      'get': grpc.unary_unary_rpc_method_handler(
-          servicer.get,
-          request_deserializer=datastore__pb2.Request.FromString,
-          response_serializer=datastore__pb2.Response.SerializeToString,
-      ),
-      'sendUpdateInfo': grpc.unary_unary_rpc_method_handler(
-          servicer.sendUpdateInfo,
-          request_deserializer=datastore__pb2.Request.FromString,
+      'init_connection': grpc.unary_stream_rpc_method_handler(
+          servicer.init_connection,
+          request_deserializer=datastore__pb2.UpdateReq.FromString,
           response_serializer=datastore__pb2.UpdateInfo.SerializeToString,
       ),
   }
