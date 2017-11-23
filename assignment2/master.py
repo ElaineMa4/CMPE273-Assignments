@@ -19,6 +19,7 @@ sample_data = { "1" : "abc", "2" : "def", "3" : "wxyz"}
 # MyDatastoreServicer
 class MasterServicer(datastore_pb2.DatastoreServicer):
     def __init__(self):
+        self.my_queue = queue.Queue()
         self.db = rocksdb.DB("master.db", rocksdb.Options(create_if_missing=True))
 
     def decorator(my_func):
@@ -28,31 +29,34 @@ class MasterServicer(datastore_pb2.DatastoreServicer):
             value=request.value.encode()
             # init operation
             operation = Datastore_pb2.UpdateInfo(operation, key, value) 
-            self.connection_queue.put(operation)
+            self.my_queue.put(operation)
             return my_func(self, request, context)
         return wrapper
     
     @decorator
     def operation(self, request, context):
         if request.operation == 'put':
-            self.db.put(request.key.encode(), request.value.encode())
+            key = request.key.encode()
+            value = request.value.encode()
+            self.db.put(key, value)
             return Datastore_pb2.Response(data='put success : {}'.format(request.key))
         elif request.operation == 'delete':
-            self.db.delete(request.key.encode())
+            d_key = request.key.encode()
+            self.db.delete(d_key)
             return Datastore_pb2.Response(data='delete success : {}'.format(request.key))
         elif request.operation == 'get':
-            value = self.db.get(request.key.encode())
+            g_key = request.key.encode()
+            value = self.db.get(g_key)
             return Datastore_pb2.Response(data='get success : {} : {}'.format(request.key, value))
         else:
-            print("wrong operation")
-            return Datastore_pb2.Response(data='wrong operatio')
+            print("wrong operation!")
+            return Datastore_pb2.Response(data='wrong operation!')
 
     def init_connection(self, request, context):
             print('slave connected to master...')
             while True:            
-                value_queue = self.connection_queue.get()
-                print('Got a request to perform {} operation'.format(value_queue.operation))
-                yield value_queue
+                real_queue = self.my_queue.get()
+                yield real_queue
 
 
 def run(host, port):

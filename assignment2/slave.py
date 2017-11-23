@@ -18,16 +18,23 @@ class MySlave():
         self.db = rocksdb.DB("slave.db", rocksdb.Options(create_if_missing=True))
 
     def get_update(self):
-        self.stub.
-
-
-    def put(self, value):
-        //TODO: put into db
-        return self.stub.put(datastore_pb2.Request(data=value))
-
-    def get(self, key):
-        return self.stub.get(datastore_pb2.Request(data=key))
-
+        real_queue = self.stub.getConnection(Datastore_pb2.ConnectionRequest())
+        for element in real_queue:
+            if element.operation == 'put':
+                key = element.key.encode()
+                value = element.value.encode()                
+                print("in slave, put {} : {} ".format(key, value))
+                self.db.put(key, value)
+            elif element.operation == 'delete':
+                d_key = element.key.encode()
+                print("in slave, delete {} ".format(d_key))
+                self.db.delete(d_key)
+            elif element.operation == 'get':
+                print("in slave, get {} : {}".format(element.key,v))
+                value = self.db.get(element.key.encode())         
+            else:
+                print("in slave, wrong operation!")
+                pass
 
 def main():
     parser = argparse.ArgumentParser()
