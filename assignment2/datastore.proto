@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+message Request {
+    string data = 1;
+}
+
+message Response {
+    string data = 1;
+}
+
+message UpdateInfo{
+    string operation = 1;
+    string key = 2;
+    string value = 3;
+}
+
+message UpdateReq {}
+
+service Datastore {
+   rpc put(Request) returns (Response) {}
+   rpc get(Request) returns (Response) {}
+   rpc sendUpdateInfo(Request) returns (stream UpdateInfo) {}
+   rpc getUpdateInfo(UpdateReq) returns (stream UpdateInfo) {}
+}
