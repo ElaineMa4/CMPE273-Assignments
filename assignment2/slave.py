@@ -37,19 +37,11 @@ class MySlave():
                 pass
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("host", help="the ip of the server")
-    args = parser.parse_args()
-    host=args.host
-    print("Slave is connecting to Master at {}:{}...".format(args.host, MASTER_PORT))
-    slave = MySlave(host)
-
-    try:
-        while True:
-            time.sleep(SEC)
-            slave.get_update()
-    except KeyboardInterrupt:
-        sys.exit("Stop sync slave!")
+parser = argparse.ArgumentParser()
+    parser.add_argument("host", help="follower")
+    args = parser.parse_args()    
+    slave = MySlave(host=args.host)
+    res = slave.get_update()
 
 if __name__ == '__main__':
     main()

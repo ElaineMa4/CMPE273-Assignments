@@ -9,15 +9,13 @@ import datastore_pb2
 import datastore_pb2_grpc
 import uuid
 import rocksdb
-import queue
 
+import queue
 from concurrent import futures
 
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
-sample_data = { "1" : "abc", "2" : "def", "3" : "wxyz"}
 
-# MyDatastoreServicer
-class MasterServicer(datastore_pb2.DatastoreServicer):
+class MyDatastoreServicer(datastore_pb2.DatastoreServicer):
     def __init__(self):
         self.my_queue = queue.Queue()
         self.db = rocksdb.DB("master.db", rocksdb.Options(create_if_missing=True))
